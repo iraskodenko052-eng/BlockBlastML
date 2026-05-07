@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Blast</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background: #e0e0e0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .cell:hover {
+            transform: scale(0.95);
+        }
+
+        .cell.active {
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .cell.type-1 { background: #FF6B6B; }
+        .cell.type-2 { background: #4ECDC4; }
+        .cell.type-3 { background: #45B7D1; }
+        .cell.type-4 { background: #FFA07A; }
+        .cell.type-5 { background: #98D8C8; }
+        .cell.type-6 { background: #F7DC6F; }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+
+        .info {
+            background: #f0f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            color: #333;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .game-over.show {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-over-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .game-over-content p {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .final-score {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .game-board {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Block Blast</h1>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Moves</div>
+                <div class="stat-value" id="moves">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <div class="buttons">
+            <button class="btn-primary" onclick="newGame()">New Game</button>
+            <button class="btn-secondary" onclick="undo()">Undo</button>
+        </div>
+
+        <div class="info">
+            <strong>How to Play:</strong><br>
+            • Click on blocks to select them<br>
+            • Match 3+ blocks of the same color in a row/column<br>
+            • Clear blocks to increase your score<br>
+            • Each move counts, make them count!
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOverModal">
+        <div class="game-over-content">
+            <h2>Game Over!</h2>
+            <p>No more moves available</p>
+            <div class="final-score" id="finalScore">0</div>
+            <button class="btn-primary" onclick="newGame()" style="width: 100%; margin-top: 20px;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 6;
+        const BLOCK_TYPES = 6;
+        let gameBoard = [];
+        let score = 0;
+        let moves = 0;
+        let level = 1;
+        let gameHistory = [];
+        let gameActive = true;
+
+        function initializeGame() {
+            gameBoard = [];
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                gameBoard.push(Math.floor(Math.random() * BLOCK_TYPES) + 1);
+            }
+            gameHistory = [JSON.parse(JSON.stringify(gameBoard))];
+            score = 0;
+            moves = 0;
+            level = 1;
+            gameActive = true;
+            renderBoard();
+            updateStats();
+            document.getElementById('gameOverModal').classList.remove('show');
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('gameBoard');
+            boardElement.innerHTML = '';
+
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const cell = document.createElement('div');
+                cell.className = `cell type-${gameBoard[i]}`;
+                cell.textContent = gameBoard[i];
+                cell.onclick = () => handleCellClick(i);
+                boardElement.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(index) {
+            if (!gameActive) return;
+
+            const row = Math.floor(index / GRID_SIZE);
+            const col = index % GRID_SIZE;
+
+            // Check for matches in row
+            let rowMatches = [index];
+            let left = col - 1;
+            while (left >= 0 && gameBoard[row * GRID_SIZE + left] === gameBoard[index]) {
+                rowMatches.unshift(row * GRID_SIZE + left);
+                left--;
+            }
+            let right = col + 1;
+            while (right < GRID_SIZE && gameBoard[row * GRID_SIZE + right] === gameBoard[index]) {
+                rowMatches.push(row * GRID_SIZE + right);
+                right++;
+            }
+
+            // Check for matches in column
+            let colMatches = [index];
+            let up = row - 1;
+            while (up >= 0 && gameBoard[up * GRID_SIZE + col] === gameBoard[index]) {
+                colMatches.unshift(up * GRID_SIZE + col);
+                up--;
+            }
+            let down = row + 1;
+            while (down < GRID_SIZE && gameBoard[down * GRID_SIZE + col] === gameBoard[index]) {
+                colMatches.push(down * GRID_SIZE + col);
+                down++;
+            }
+
+            let matchesToClear = [];
+            if (rowMatches.length >= 3) {
+                matchesToClear = [...new Set([...matchesToClear, ...rowMatches])];
+            }
+            if (colMatches.length >= 3) {
+                matchesToClear = [...new Set([...matchesToClear, ...colMatches])];
+            }
+
+            if (matchesToClear.length >= 3) {
+                gameHistory.push(JSON.parse(JSON.stringify(gameBoard)));
+                
+                matchesToClear.forEach(idx => {
+                    gameBoard[idx] = 0;
+                });
+
+                score += matchesToClear.length * 10;
+                moves++;
+                
+                if (moves % 5 === 0) {
+                    level++;
+                }
+
+                applyGravity();
+                fillEmptySpaces();
+                renderBoard();
+                updateStats();
+
+                setTimeout(() => {
+                    if (!hasValidMoves()) {
+                        gameActive = false;
+                        showGameOver();
+                    }
+                }, 300);
+            }
+        }
+
+        function applyGravity() {
+            for (let col = 0; col < GRID_SIZE; col++) {
+                let writePos = GRID_SIZE * GRID_SIZE - GRID_SIZE + col;
+                for (let row = GRID_SIZE - 1; row >= 0; row--) {
+                    const readPos = row * GRID_SIZE + col;
+                    if (gameBoard[readPos] !== 0) {
+                        gameBoard[writePos] = gameBoard[readPos];
+                        if (writePos !== readPos) {
+                            gameBoard[readPos] = 0;
+                        }
+                        writePos -= GRID_SIZE;
+                    }
+                }
+            }
+        }
+
+        function fillEmptySpaces() {
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                if (gameBoard[i] === 0) {
+                    gameBoard[i] = Math.floor(Math.random() * BLOCK_TYPES) + 1;
+                }
+            }
+        }
+
+        function hasValidMoves() {
+            for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                const row = Math.floor(i / GRID_SIZE);
+                const col = i % GRID_SIZE;
+                const current = gameBoard[i];
+
+                // Check right
+                if (col + 2 < GRID_SIZE && gameBoard[i + 1] === current && gameBoard[i + 2] === current) {
+                    return true;
+                }
+
+                // Check down
+                if (row + 2 < GRID_SIZE && gameBoard[i + GRID_SIZE] === current && gameBoard[i + 2 * GRID_SIZE] === current) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('level').textContent = level;
+        }
+
+        function showGameOver() {
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverModal').classList.add('show');
+        }
+
+        function undo() {
+            if (gameHistory.length > 1) {
+                gameHistory.pop();
+                gameBoard = JSON.parse(JSON.stringify(gameHistory[gameHistory.length - 1]));
+                if (moves > 0) moves--;
+                renderBoard();
+                updateStats();
+            }
+        }
+
+        function newGame() {
+            initializeGame();
+        }
+
+        // Start the game
+        initializeGame();
+    </script>
+</body>
+</html>
